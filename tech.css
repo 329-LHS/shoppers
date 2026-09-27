@@ -100,6 +100,30 @@ html[data-theme="light"] .floating-nav.scrolled{background:rgba(245,250,255,.89)
 .motion-enabled .product-card.reveal-ready.is-visible:hover{transform:translateY(-2px) scale(1.02)}
 :focus-visible{outline:2px solid #00f0ff;outline-offset:3px}
 html[data-theme="dark"] .product-card:focus-visible{outline-color:#00f0ff}
+.hero-theme-btn{
+  position:fixed;top:22px;right:clamp(16px,3.2vw,44px);z-index:70;
+  display:inline-flex;align-items:center;gap:9px;min-height:42px;
+  padding:8px 16px;border:1px solid rgba(124,205,255,.28);border-radius:999px;
+  background:rgba(11,22,43,.78);color:#ecfaff;
+  box-shadow:0 10px 30px rgba(0,0,0,.16);backdrop-filter:blur(16px);
+  font-size:13px;font-weight:700;letter-spacing:.02em;cursor:pointer;
+  transition:background-color .2s,border-color .2s,transform .2s;
+}
+.hero-theme-btn:hover{transform:translateY(-2px);border-color:rgba(124,205,255,.6)}
+.theme-switch-icon{font-size:19px;line-height:1}
+body.shop-active .hero-theme-btn{display:none}
+html[data-theme="light"]{--paper:#fbfdff}
+html[data-theme="light"] body{
+  background:radial-gradient(850px 550px at 2% -15%,rgba(59,164,255,.12),transparent 66%),
+    radial-gradient(800px 580px at 98% 5%,rgba(126,107,255,.10),transparent 66%),
+    #fbfdff;
+  background-attachment:fixed;
+}
+html[data-theme="light"] .hero-theme-btn{
+  background:rgba(255,255,255,.86);color:#183450;
+  border-color:rgba(47,127,192,.22);box-shadow:0 10px 30px rgba(53,98,139,.12);
+}
+html[data-theme="light"] .hero-theme-btn:hover{border-color:rgba(20,137,228,.48)}
 @media(max-width:860px){
   .motion-enabled .product-card.reveal-ready{transform:translateY(18px)}
   .motion-enabled .product-card.reveal-ready.is-visible{transform:translateY(0)}
