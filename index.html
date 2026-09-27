@@ -654,6 +654,15 @@ body:not(.shop-active) #meteorField{opacity:1}
 @keyframes meteor-flight{0%{opacity:0;transform:rotate(-28deg) translate3d(0,0,0)}6%{opacity:1}62%{opacity:.78}100%{opacity:0;transform:rotate(-28deg) translate3d(58vw,38vh,0)}}
 html[data-theme="light"] .meteor{background:linear-gradient(90deg,transparent,rgba(50,162,230,.30) 18%,rgba(255,255,255,.98) 70%,rgba(106,87,255,.65));box-shadow:0 0 9px rgba(27,150,227,.35),0 0 18px rgba(99,83,238,.12)}
 
+/* Snowflake click bloom on blank landing space */
+.snow-burst-layer{position:fixed;inset:0;z-index:9998;pointer-events:none;overflow:hidden}
+.snow-burst{position:fixed;left:var(--sx);top:var(--sy);width:1px;height:1px;pointer-events:none}
+.snow-burst i{position:absolute;left:0;top:0;font-style:normal;font-size:calc(11px * var(--scale));line-height:1;color:rgba(255,255,255,.96);text-shadow:0 0 7px rgba(72,198,255,.90),0 0 15px rgba(113,88,255,.38);transform:translate(-50%,-50%) scale(.25) rotate(0deg);opacity:0;animation:snow-bloom 1050ms var(--ease-out) var(--delay) forwards}
+html[data-theme="light"] .snow-burst i{color:#ffffff;text-shadow:0 0 7px rgba(0,137,224,.68),0 0 16px rgba(97,78,235,.28)}
+@keyframes snow-bloom{0%{opacity:0;transform:translate(-50%,-50%) scale(.15) rotate(0deg)}12%{opacity:1}65%{opacity:.94}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(var(--scale)) rotate(var(--rot))}}
+.snow-burst::after{content:"";position:absolute;left:0;top:0;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 0 0 7px rgba(88,206,255,.10),0 0 26px rgba(116,91,255,.35);transform:translate(-50%,-50%);animation:snow-core 480ms ease-out forwards}
+@keyframes snow-core{to{opacity:0;transform:translate(-50%,-50%) scale(4)}}
+
 /* NOVA AURORA — recognizable fox-drone silhouette */
 .pet-stage{width:224px;height:212px;right:5vw;bottom:8.5vh}.pet-buddy{width:166px;height:172px;filter:drop-shadow(0 28px 52px rgba(28,135,219,.24))}
 .pet-aura{position:absolute;left:18px;top:7px;width:132px;height:132px;border-radius:50%;filter:blur(18px);opacity:.15;pointer-events:none}.pet-aura-a{background:#52e7ff;animation:pet-aura-pulse 3.8s ease-in-out infinite}.pet-aura-b{background:#8d71ff;animation:pet-aura-pulse 4.6s ease-in-out 1.2s infinite}
@@ -670,8 +679,8 @@ body.shop-active .pet-stage{transform:scale(.62);right:12px;bottom:10px}
 @keyframes pet-wing-float{0%,100%{translate:0 0;rotate:-4deg}50%{translate:0 -5px;rotate:5deg}}
 @keyframes pet-status{0%,100%{opacity:.25;transform:scaleX(.65)}50%{opacity:1;transform:scaleX(1)}}
 
-@media(max-width:860px){.pet-stage{width:170px;height:170px}.pet-wing{display:none}.meteor{--len:110px!important}}
-@media(prefers-reduced-motion:reduce){#meteorField{display:none!important}.pet-aura,.pet-wing,.pet-status i{animation:none!important}}
+@media(max-width:860px){.pet-stage{width:170px;height:170px}.pet-wing{display:none}.meteor{--len:110px!important}.snow-burst i:nth-child(n+13){display:none}}
+@media(prefers-reduced-motion:reduce){#meteorField{display:none!important}.snow-burst-layer{display:none!important}.pet-aura,.pet-wing,.pet-status i{animation:none!important}}
 
 </style>
 <style>
@@ -701,6 +710,7 @@ body:not(.shop-active) .floating-nav{top:58%;z-index:50}body:not(.shop-active) .
 <div class="ambient-orb ambient-orb-a" aria-hidden="true"></div>
 <div class="ambient-orb ambient-orb-b" aria-hidden="true"></div>
 <div class="meteor-field" id="meteorField" aria-hidden="true"></div>
+<div class="snow-burst-layer" id="snowBurstLayer" aria-hidden="true"></div>
 <a class="sr-only" href="#main">跳到主要内容</a>
 
 <header class="floating-nav" id="floatingNav">
@@ -3125,9 +3135,10 @@ function initTechParticles() {
 }
 
 
-/* ---------- 6.14b 首页流星背景 ---------- */
+/* ---------- 6.14b 首页流星与雪花交互 ---------- */
 function initLandingAtmosphere() {
   const field = byId("meteorField");
+  const snowLayer = byId("snowBurstLayer");
   const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (field && !reduced) {
     const count = window.innerWidth < 700 ? 6 : 11;
@@ -3140,6 +3151,36 @@ function initLandingAtmosphere() {
       return `<i class="meteor" style="--x:${x};--y:${y};--len:${len};--d:${d};--delay:${delay}"></i>`;
     }).join("");
   }
+  if (!snowLayer || reduced) return;
+  window.spawnSnowBurst = function spawnSnowBurst(x,y) {
+    const burst = document.createElement("span");
+    burst.className = "snow-burst";
+    burst.style.setProperty("--sx", `${x}px`);
+    burst.style.setProperty("--sy", `${y}px`);
+    const glyphs=["❄","❅","✦","❆"];
+    const n = window.innerWidth < 700 ? 12 : 18;
+    for (let i=0;i<n;i++) {
+      const a=(Math.PI*2*i/n)+(Math.random()-.5)*.24;
+      const dist=44+Math.random()*92;
+      const flake=document.createElement("i");
+      flake.textContent=glyphs[i%glyphs.length];
+      flake.style.setProperty("--dx",`${Math.cos(a)*dist}px`);
+      flake.style.setProperty("--dy",`${Math.sin(a)*dist}px`);
+      flake.style.setProperty("--rot",`${(-120+Math.random()*300).toFixed(0)}deg`);
+      flake.style.setProperty("--scale",(0.75+Math.random()*.8).toFixed(2));
+      flake.style.setProperty("--delay",`${(Math.random()*90).toFixed(0)}ms`);
+      burst.appendChild(flake);
+    }
+    snowLayer.appendChild(burst);
+    setTimeout(()=>burst.remove(),1250);
+  };
+  document.addEventListener("pointerdown", e => {
+    if (document.body.classList.contains("shop-active")) return;
+    const t=e.target;
+    if (!(t instanceof Element)) return;
+    if (t.closest("button,a,input,select,textarea,.floating-nav,.pet-stage,.detail-overlay,.drawer,.mega-menu")) return;
+    window.spawnSnowBurst(e.clientX,e.clientY);
+  }, {passive:true});
 }
 
 /* ---------- 6.14 启动 ---------- */
