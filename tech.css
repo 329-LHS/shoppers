@@ -112,6 +112,11 @@ html[data-theme="dark"] .product-card:focus-visible{outline-color:#00f0ff}
 .hero-theme-btn:hover{transform:translateY(-2px);border-color:rgba(124,205,255,.6)}
 .theme-switch-icon{font-size:19px;line-height:1}
 body.shop-active .hero-theme-btn{display:none}
+.hero-art,.hero-art *{
+  pointer-events:none;
+  -webkit-user-select:none;user-select:none;
+  caret-color:transparent;
+}
 html[data-theme="light"]{--paper:#fbfdff}
 html[data-theme="light"] body{
   background:radial-gradient(850px 550px at 2% -15%,rgba(59,164,255,.12),transparent 66%),
